@@ -33,7 +33,7 @@ namespace HackAssembler
                 switch (GetCommandType(cleanedLines[i]))
                 {
                     case CommandType.L_COMMAND:
-                        _Symbol.AddEntry(GetSymbol(cleanedLines[i]), i);
+                        _Symbol.AddLEntry(GetSymbol(cleanedLines[i]), i);
                         break;
                 }
             }

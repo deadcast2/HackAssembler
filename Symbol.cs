@@ -39,10 +39,11 @@ namespace HackAssembler
             };
         }
 
-        public void AddEntry(string label, int lineNumber)
+        public void AddLEntry(string label, int lineNumber)
         {
             if (!_Map.ContainsKey(label))
             {
+                // Labels aren't considered a line in the program so offset the current line number.
                 _Map[label] = Utils.ToBinary(lineNumber - _LocatedLCommands++);
             }
         }
@@ -57,9 +58,11 @@ namespace HackAssembler
             {
                 if (int.TryParse(address, out int number))
                 {
+                    // Just a plain numeric so convert and cache.
                     return _Map[address] = Utils.ToBinary(number);
                 }
 
+                // New user-defined variable so set an appropriate address and store.
                 return _Map[address] = Utils.ToBinary(_NextAvailableAddress++);
             }
         }
