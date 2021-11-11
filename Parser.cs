@@ -8,6 +8,8 @@ namespace HackAssembler
     {
         public enum CommandType { A_COMMAND, C_COMMAND, L_COMMAND, UNKNOWN }
 
+        private Symbol _Symbol = new();
+
         public Parser(string filepath)
         {
             try
@@ -25,26 +27,35 @@ namespace HackAssembler
         private string[] FirstPass(string[] lines)
         {
             var cleanedLines = RemoveWhiteSpaceAndComments(lines);
-            var binaryLines = new List<string>();
 
             for (var i = 0; i < cleanedLines.Length; i++)
             {
-                switch(GetCommandType(cleanedLines[i]))
+                switch (GetCommandType(cleanedLines[i]))
+                {
+                    case CommandType.L_COMMAND:
+                        _Symbol.AddEntry(GetSymbol(cleanedLines[i]), i);
+                        break;
+                }
+            }
+
+            return SecondPass(cleanedLines);
+        }
+
+        private string[] SecondPass(string[] lines)
+        {
+            var binaryLines = new List<string>();
+
+            for (var i = 0; i < lines.Length; i++)
+            {
+                switch(GetCommandType(lines[i]))
                 {
                     case CommandType.A_COMMAND:
-                    case CommandType.L_COMMAND:
-                        var symbol = GetSymbol(cleanedLines[i]);
-                        int.TryParse(symbol, out int address);
-                        var binary = Convert.ToString(address, 2);
-                        binaryLines.Add(binary.PadLeft(16, '0'));
+                        binaryLines.Add(_Symbol.GetEntry(GetSymbol(lines[i])));
                         break;
                     case CommandType.C_COMMAND:
-                        var dest = GetDest(cleanedLines[i]);
-                        var destCode = Code.Dest(dest);
-                        var comp = GetComp(cleanedLines[i]);
-                        var compCode = Code.Comp(comp);
-                        var jump = GetJump(cleanedLines[i]);
-                        var jumpCode = Code.Jump(jump);
+                        var destCode = Code.Dest(GetDest(lines[i]));
+                        var compCode = Code.Comp(GetComp(lines[i]));
+                        var jumpCode = Code.Jump(GetJump(lines[i]));
                         binaryLines.Add($"111{compCode}{destCode}{jumpCode}");
                         break;
                 }
